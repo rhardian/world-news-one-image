@@ -1,5 +1,9 @@
 # world-news-one-image
 
+[![make.fun · news-image-20261118](https://make.fun/badge/news-image-20261118.svg)](https://make.fun/bounty/news-image-20261118?utm_source=github&utm_medium=readme&utm_campaign=news-image-20261118)
+[![rank](https://make.fun/badge/news-image-20261118/rhardian/world-news-one-image/rank.svg)](https://make.fun/bounty/news-image-20261118/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=news-image-20261118)
+[![reward](https://make.fun/badge/news-image-20261118/rhardian/world-news-one-image/reward.svg)](https://make.fun/bounty/news-image-20261118?utm_source=github&utm_medium=readme&utm_campaign=news-image-20261118)
+
 One image that sums up the world's news of **Wednesday 18 November 2026**,
 entered in make.fun's `news-image-20261118` bounty
 (https://make.fun/bounty/news-image-20261118).
