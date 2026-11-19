@@ -2,7 +2,7 @@
 """make.fun news-image-20261118 entry point (Python 3.13, standard library only).
 
 The graded program copies the pre-rendered front page of 18 November 2026
-world news (assets/entry.png, 58 date-checked stories) to the output
+world news (assets/entry.png, 54 date-checked stories) to the output
 directory. The image is rendered offline by render_news_image.py; copying
 keeps both graded runs byte-identical and needs no network, no dependencies
 and no randomness.

@@ -9,12 +9,17 @@ entered in make.fun's `news-image-20261118` bounty
 (https://make.fun/bounty/news-image-20261118).
 
 The entry is a broadsheet-style front page, "The World in One Day", dated
-18 November 2026. It leads with the first US-China-Russia trilateral at APEC
-in Shenzhen, then six stories across regions and beats: Iran's strikes on
-Kuwait and Bahrain, the COP31 deadlock in Antalya, the WHO superbug warning,
-Mary Peltola's Alaska Senate win, the glitchy GTA VI launch, and Magnus
-Carlsen's forfeit in Budapest. A ticker carries the record Portugal storms,
-the US-Venezuela military reset and the iCloud outage.
+18 November 2026. It leads with Xi greeting Trump on the tarmac as APEC opens
+in Shenzhen, then six feature stories: Iran's drone strikes on Gulf bases,
+the EU's €45bn Ukraine loan proposal, Voyager 1 reaching one light-day from
+Earth, the Dow's 561-point fall after hawkish Fed minutes, the WHO superbug
+warning, and the COP31 draft split. A numbers strip, a UTC timeline and seven
+region boxes carry 54 stories in total, each happened or first reported on
+18 November 2026. A red DATE CHECK band lists what was deliberately left out
+(Tuesday's Nvidia results, the Peltola race call, the Kerch bridge strike,
+the Knesset speaker vote) and what had not happened yet (Thursday's
+trilateral talks, Anthropic's first trade and GTA VI's US release; Friday's
+Akvan landfall and COP31 close). One-party claims are attributed.
 
 ## Layout
 
@@ -36,5 +41,6 @@ mkdir -p out && MAKEFUN_OUTPUT_DIR=out python3 main.py
 
 ## Sources
 
-Headlines follow the reporting of 18 November 2026 from Euronews, NPR,
-UN News, Inter Press Service, Hindustan Times and Newser.
+Headlines follow the reporting of 18 November 2026 from Reuters, AFP, AP,
+Al Jazeera, Euronews, UN News, NASA/JPL, ONS, ECB, RNZ, PACNEWS, allAfrica,
+Times of Israel, Kyiv Independent, CNBC, ESPN, Politico and NPR.

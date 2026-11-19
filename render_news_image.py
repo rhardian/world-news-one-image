@@ -6,14 +6,14 @@ graded program (main.py) only copies the rendered PNG; this script is how the
 image was made. It needs Pillow and the DejaVu fonts, and it is fully
 deterministic: same inputs, same bytes.
 
-Fifty-eight distinct stories, each happened or first reported on Wednesday
+Fifty-four distinct stories, each happened or first reported on Wednesday
 18 November 2026 (any time zone), checked against dated reports: Reuters,
 AFP, AP, Al Jazeera, Euronews, UN News, NASA/JPL, ONS, ECB, RNZ, PACNEWS,
 allAfrica, Times of Israel, Kyiv Independent, CNBC, ESPN. One-party claims
 are attributed ("Houthis:", "Iran 'monitoring'"); the Thursday trilateral is
 marked as scheduled, not held. Layout: masthead + red date band, lead with
 a drawn tarmac vignette, numbers strip, six icon feature cards, a UTC
-timeline, seven region boxes and a ticker.
+timeline, seven region boxes and a date-check band.
 """
 
 from __future__ import annotations
@@ -65,6 +65,7 @@ SANS_12B = font("DejaVuSans-Bold.ttf", 12)
 SANS_11 = font("DejaVuSans.ttf", 11)
 SANS_11B = font("DejaVuSans-Bold.ttf", 11)
 SANS_10 = font("DejaVuSans.ttf", 10)
+SANS_10B = font("DejaVuSans-Bold.ttf", 10)
 
 
 def text_width(draw: ImageDraw.ImageDraw, text: str, f: ImageFont.FreeTypeFont) -> float:
@@ -112,7 +113,7 @@ def rule(draw, y, x0=MARGIN, x1=W - MARGIN, width=2, fill=INK) -> None:
 def masthead(draw) -> None:
     rule(draw, 22, width=3)
     draw.text((MARGIN, 30), "GLOBAL EDITION · EVERY STORY DATE-CHECKED", font=SANS_14, fill=GRAY)
-    right = "58 STORIES · 7 REGIONS · ONE IMAGE"
+    right = "54 STORIES · 7 REGIONS · ONE IMAGE"
     draw.text((W - MARGIN - text_width(draw, right, SANS_14), 30), right, font=SANS_14, fill=GRAY)
     title = "The World in One Day"
     tw = text_width(draw, title, SERIF_50)
@@ -164,7 +165,7 @@ def lead_story(draw) -> None:
         box = draw.textbbox((0, 0), line, font=SERIF_32)
         y += (box[3] - box[1]) + 4
     draw_wrapped(draw, MARGIN, y + 4,
-                 "First airport welcome by Xi for a visiting leader; Trump-Putin handshake "
+                 "Rare airport welcome by Xi breaks protocol; Trump-Putin handshake "
                  "before the family photo. Trilateral set for Thursday.",
                  SANS_16, INK, max_w, gap=2)
     fw, fh = 34, 22
@@ -244,8 +245,8 @@ NUMBERS = [
     ("€45bn", "Ukraine loan proposed"),
     ("25.9bn km", "Voyager 1 distance"),
     ("3.6%", "UK inflation, October"),
-    ("$115.8bn", "Nvidia Q3 revenue"),
-    ("8.5M bpd", "Hormuz oil, half prewar"),
+    ("$81.3bn", "Anthropic IPO, record"),
+    ("8.6M bpd", "Hormuz oil, half prewar"),
 ]
 
 
@@ -329,17 +330,17 @@ def icon_superbug(draw, x, y) -> None:
     draw.line([px - 17, py - 12, px + 17, py + 12], fill=INK, width=4)
 
 
-def icon_chip(draw, x, y) -> None:
+def icon_fedchart(draw, x, y) -> None:
     icon_tile(draw, x, y)
-    cx, cy = x + 42, y + 42
-    draw.rounded_rectangle([cx - 22, cy - 22, cx + 22, cy + 22], radius=4, fill=INK)
-    draw.rectangle([cx - 13, cy - 13, cx + 13, cy + 13], fill=TILE_BG)
-    for d in (-14, -5, 4, 13):
-        draw.line([cx + d, cy - 22, cx + d, cy - 30], fill=INK, width=3)
-        draw.line([cx + d, cy + 22, cx + d, cy + 30], fill=INK, width=3)
-        draw.line([cx - 22, cy + d, cx - 30, cy + d], fill=INK, width=3)
-        draw.line([cx + 22, cy + d, cx + 30, cy + d], fill=INK, width=3)
-    draw.text((cx - 13, cy - 9), "NV", font=SANS_16B, fill=RED)
+    x0, y0, x1, y1 = x + 14, y + 16, x + 70, y + 62
+    draw.line([x0, y0, x0, y1], fill=INK, width=2)
+    draw.line([x0, y1, x1, y1], fill=INK, width=2)
+    pts = [(x0 + 4, y0 + 6), (x0 + 16, y0 + 14), (x0 + 26, y0 + 8),
+           (x0 + 38, y0 + 26), (x0 + 50, y0 + 36)]
+    draw.line(pts, fill=RED, width=3)
+    ex, ey = pts[-1]
+    draw.polygon([(ex - 7, ey - 1), (ex + 2, ey + 3), (ex - 1, ey - 7)], fill=RED)
+    draw.text((x0 + 10, y1 + 4), "-561", font=SANS_12B, fill=RED)
 
 
 def icon_probe(draw, x, y) -> None:
@@ -357,12 +358,12 @@ def icon_probe(draw, x, y) -> None:
 
 
 FEATURES = [
-    (icon_missile, "Iran drones hit Gulf bases", "Kuwait intercepts; Bahrain repels 4th attack in 6 days", "AFP · AP"),
+    (icon_missile, "Iran drones hit Gulf bases", "Kuwait intercepts; Bahrain repels new attacks", "AFP · AP"),
     (icon_euro, "EU plans €45bn Ukraine loan", "€25bn arms + €20bn budget; repay after reparations", "REUTERS"),
     (icon_probe, "Voyager 1: one light-day out", "25.9bn km at 10:16 UTC; 49 years into the flight", "NASA / JPL"),
-    (icon_chip, "Nvidia doubles to $115.8bn", "Board rules out Huang return; Kress interim CEO", "AFP"),
+    (icon_fedchart, "Dow falls 561 on Fed minutes", "Almost all officials see more hikes; Nasdaq +0.4%", "FED · CNBC"),
     (icon_superbug, "WHO: superbugs outrun drugs", "Resistance worse than 2019; last-resort failing", "UN NEWS"),
-    (icon_globe_leaf, "COP31 draft splits nations", "Fossil phase-out text; Arab Group, Russia reject", "ARAB NEWS"),
+    (icon_globe_leaf, "COP31 draft splits nations", "Phase-out text still split; Arab Group, Russia reject", "ARAB NEWS"),
 ]
 
 
@@ -385,9 +386,9 @@ def features(draw) -> None:
 # ---------------------------------------------------------------- timeline
 TIMELINE = [
     ("10:16", "Voyager light-day"),
+    ("10:40", "€45bn proposed"),
     ("11:00", "GTA VI live in NZ"),
     ("11:01", "ECB AI warning"),
-    ("14:52", "€45bn proposed"),
     ("16:55", "Waymo pullback"),
     ("21:44", "DB leak probe"),
 ]
@@ -412,24 +413,24 @@ def timeline(draw) -> None:
 REGIONS = [
     ("EUROPE", [
         "ECB: AI boom echoes dotcom era",
-        "Deutsche Bank leak: 15M files",
+        "DB leak probe opens: 15M files",
         "UK inflation rises to 3.6%",
-        "Romania M5.7: strongest since 2018",
+        "Romania M5.7: strongest in years",
         "Odesa strike kills 4; 141 drones",
         "Crimean Bridge: trains resume",
-        "Norway, Sweden: $370m for arms",
+        "Germany power-tax cut from 2027",
     ]),
     ("NORTH AMERICA", [
-        "Peltola flips Alaska Senate seat",
+        "Jeffries Speaker nod: 251–11",
         "Outages: Microsoft, FAA, banks",
         "Rubio: no sign of cyberattack",
         "Waymo pulls freeway robotaxis",
-        "Anthropic IPO: Nasdaq debut Thu",
-        "Shannon C-130 case: NY indictment",
+        "Anthropic prices record $81.3bn IPO",
+        "TSX falls 2.1% to 5-month low",
     ]),
     ("ASIA", [
         "Xi-Putin lunch: multipolar push",
-        "Trump-Putin bilateral begins",
+        "Trump-Putin handshake: first since 2025",
         "Trilateral set for Thursday",
         "Manila: 'biggest' trade deal claim",
         "William and Kate meet Modi",
@@ -442,32 +443,32 @@ REGIONS = [
         "Knesset moves to repeal overhaul",
         "Gaza doctor detention extended",
         "Qaani in Baghdad amid tensions",
-        "Hormuz flows halved: 8.5M bpd",
-        "3rd US carrier; Iran 'monitoring'",
+        "Hormuz flows halved: 8.6M bpd",
+        "Iran army: 'monitoring' US movements",
     ]),
     ("AFRICA", [
-        "Ethiopia-Eritrea clashes near Badme",
-        "Guinea: 224 jailed over illegal gold",
+        "Ethiopia-Eritrea troops mass at Badme",
+        "Amnesty: RSF drones kill 37 in El Obeid",
         "Mauritius: Chagos handover due in Dec",
         "S Africa rebukes Nigeria envoy over row",
-        "WFP feeds families fleeing Ethiopia",
+        "WHO keeps DRC Ebola emergency: 11,300+",
         "El Niño + war: 1m Ethiopians at risk",
         "Besigye family raises health alarm",
     ]),
     ("LATIN AMERICA", [
         "Hegseth in Bogotá: first C-130 handed over",
         "Surprise stopover in Venezuela",
-        "Venezuela unions call 24-hour strike",
-        "Paraguay AG resigns before impeachment",
+        "Brazil Senate backs Lula $10bn plan",
+        "Paraguay Senate swears in interim AG",
         "Chile: CUT marches against Kast cuts",
-        "Mexico 1-0 Jamaica: Final Four bound",
+        "Peru Tumbes river stays on red alert",
     ]),
     ("OCEANIA & PACIFIC", [
         "Fiji: national disaster over drought",
         "Cyclone Xavier: cat 5, gusts 315km/h",
-        "Rio Tinto: $250M Panguna cleanup",
+        "Australia sanctions Weiss over settlements",
         "GTA VI unlocks first in New Zealand",
-        "PNG three-child policy splits opinion",
+        "M6.0 quake hits PNG region",
         "Vanuatu denies banking-collapse rumour",
         "RNZ cuts: 58 jobs, Pacific link at risk",
     ]),
@@ -514,34 +515,34 @@ def regions(draw) -> None:
 
 
 # ---------------------------------------------------------------- footer
-TICKER_ITEMS = [
-    "IIHF hit by cyberattack",
-    "Bezos backed Pattinson Bond pick",
-    "Australia sanctions Israeli activists",
-    "WHO DG candidates pitch plans",
-]
+DATECHECK_LEFTOUT = ("LEFT OUT (TUE 17): Nvidia results · Peltola call · Kerch bridge strike · "
+                     "Knesset speaker vote")
+DATECHECK_NOTYET = ("NOT YET (THU 19): trilateral talks · Anthropic first trade · GTA VI US release · "
+                    "(FRI 20): Akvan landfall · COP31 close")
 SOURCES = ("Sources: Reuters · AFP · AP · Al Jazeera · Euronews · UN News · NASA/JPL · ONS · ECB · "
-           "RNZ · PACNEWS · allAfrica · Times of Israel · Kyiv Independent · CNBC · ESPN")
+           "RNZ · PACNEWS · allAfrica · Times of Israel · Kyiv Independent · CNBC · ESPN · Politico · NPR")
 
 
 def footer(draw) -> None:
-    ticker = "ALSO TODAY · " + " · ".join(TICKER_ITEMS)
-    draw.rectangle([MARGIN, 980, W - MARGIN, 1006], fill=BAND)
-    f = SANS_13
-    while text_width(draw, ticker, f) > W - 2 * MARGIN - 20 and f.size > 10:
+    draw.rectangle([MARGIN, 980, W - MARGIN, 1008], fill=WHITE, outline=RED, width=2)
+    label = "DATE CHECK · "
+    lw = text_width(draw, label, SANS_10B)
+    draw.text((MARGIN + 10, 982), label, font=SANS_10B, fill=RED)
+    draw.text((MARGIN + 10 + lw, 982), DATECHECK_LEFTOUT, font=SANS_10, fill=INK)
+    draw.text((MARGIN + 10, 995), DATECHECK_NOTYET, font=SANS_10, fill=GRAY)
+    f = SANS_11
+    while text_width(draw, SOURCES, f) > W - 2 * MARGIN and f.size > 8:
         f = font("DejaVuSans.ttf", f.size - 1)
-    tw = text_width(draw, ticker, f)
-    draw.text(((W - tw) / 2, 986), ticker, font=f, fill=WHITE)
-    sw = text_width(draw, SOURCES, SANS_11)
-    draw.text(((W - sw) / 2, 1010), SOURCES, font=SANS_11, fill=GRAY)
+    sw = text_width(draw, SOURCES, f)
+    draw.text(((W - sw) / 2, 1010), SOURCES, font=f, fill=GRAY)
 
 
 def story_count() -> int:
-    return 1 + len(FEATURES) + sum(len(s) for _, s in REGIONS) + len(TICKER_ITEMS)
+    return 1 + len(FEATURES) + sum(len(s) for _, s in REGIONS)
 
 
 def render() -> Image.Image:
-    assert story_count() == 58, f"story count drifted: {story_count()}"
+    assert story_count() == 54, f"story count drifted: {story_count()}"
     img = Image.new("RGB", (W, H), PAPER)
     draw = ImageDraw.Draw(img)
     masthead(draw)
