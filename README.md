@@ -10,11 +10,12 @@ entered in make.fun's `news-image-20261118` bounty
 
 The entry is a broadsheet-style front page, "The World in One Day", dated
 18 November 2026. It leads with Xi greeting Trump on the tarmac as APEC opens
-in Shenzhen, then six feature stories: Iran's drone strikes on Gulf bases,
-the EU's €45bn Ukraine loan proposal, Voyager 1 reaching one light-day from
-Earth, the Dow's 561-point fall after hawkish Fed minutes, the WHO superbug
-warning, and the COP31 draft split. A numbers strip, a UTC timeline and seven
-region boxes carry 54 stories in total, each happened or first reported on
+in Shenzhen, then six feature stories with verification chips: Iran's drone
+strikes on Gulf bases, the EU's €45bn Ukraine loan proposal, Voyager 1
+reaching one light-day from Earth, the Dow's 561-point fall after hawkish Fed
+minutes, the WHO superbug warning, and the COP31 draft split. A numbers
+strip, a UTC timeline, a dotted world map with numbered pins and 47 numbered
+briefs carry 54 stories in total, each happened or first reported on
 18 November 2026. A red DATE CHECK band lists what was deliberately left out
 (Tuesday's Nvidia results, the Peltola race call, the Kerch bridge strike,
 the Knesset speaker vote) and what had not happened yet (Thursday's

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Render the 18 November 2026 world-news front page to assets/entry.png.
 
-Offline asset builder for the make.fun news-image-20261118 entry (v2). The
+Offline asset builder for the make.fun news-image-20261118 entry (v4). The
 graded program (main.py) only copies the rendered PNG; this script is how the
 image was made. It needs Pillow and the DejaVu fonts, and it is fully
 deterministic: same inputs, same bytes.
@@ -9,15 +9,17 @@ deterministic: same inputs, same bytes.
 Fifty-four distinct stories, each happened or first reported on Wednesday
 18 November 2026 (any time zone), checked against dated reports: Reuters,
 AFP, AP, Al Jazeera, Euronews, UN News, NASA/JPL, ONS, ECB, RNZ, PACNEWS,
-allAfrica, Times of Israel, Kyiv Independent, CNBC, ESPN. One-party claims
-are attributed ("Houthis:", "Iran 'monitoring'"); the Thursday trilateral is
-marked as scheduled, not held. Layout: masthead + red date band, lead with
-a drawn tarmac vignette, numbers strip, six icon feature cards, a UTC
-timeline, seven region boxes and a date-check band.
+allAfrica, Times of Israel, Kyiv Independent, CNBC, ESPN, Politico, NPR.
+One-party claims are attributed ("Houthis:", "Iran 'monitoring'"); the
+Thursday trilateral is marked as scheduled, not held. Layout: masthead + red
+date band, lead with a drawn tarmac vignette, numbers strip, six icon feature
+cards with verification chips, a UTC timeline, a dotted world map with
+numbered pins beside 47 numbered briefs, and a red date-check band.
 """
 
 from __future__ import annotations
 
+import json
 import math
 from pathlib import Path
 
@@ -39,6 +41,7 @@ GREEN = (58, 122, 68)
 SKY = (212, 224, 235)
 TARMAC = (158, 156, 152)
 SKIN = (224, 182, 150)
+DOT = (150, 144, 132)
 
 FONT_DIR = Path("/usr/share/fonts/truetype/dejavu")
 
@@ -66,6 +69,8 @@ SANS_11 = font("DejaVuSans.ttf", 11)
 SANS_11B = font("DejaVuSans-Bold.ttf", 11)
 SANS_10 = font("DejaVuSans.ttf", 10)
 SANS_10B = font("DejaVuSans-Bold.ttf", 10)
+SANS_9 = font("DejaVuSans.ttf", 9)
+PIN_F = font("DejaVuSans-Bold.ttf", 8)
 
 
 def text_width(draw: ImageDraw.ImageDraw, text: str, f: ImageFont.FreeTypeFont) -> float:
@@ -358,12 +363,12 @@ def icon_probe(draw, x, y) -> None:
 
 
 FEATURES = [
-    (icon_missile, "Iran drones hit Gulf bases", "Kuwait intercepts; Bahrain repels new attacks", "AFP · AP"),
-    (icon_euro, "EU plans €45bn Ukraine loan", "€25bn arms + €20bn budget; repay after reparations", "REUTERS"),
-    (icon_probe, "Voyager 1: one light-day out", "25.9bn km at 10:16 UTC; 49 years into the flight", "NASA / JPL"),
-    (icon_fedchart, "Dow falls 561 on Fed minutes", "Almost all officials see more hikes; Nasdaq +0.4%", "FED · CNBC"),
-    (icon_superbug, "WHO: superbugs outrun drugs", "Resistance worse than 2019; last-resort failing", "UN NEWS"),
-    (icon_globe_leaf, "COP31 draft splits nations", "Phase-out text still split; Arab Group, Russia reject", "ARAB NEWS"),
+    (icon_missile, "Iran drones hit Gulf bases", "Kuwait intercepts; Bahrain repels new attacks", "CLAIM · AFP · AP"),
+    (icon_euro, "EU plans €45bn Ukraine loan", "€25bn arms + €20bn budget; repay after reparations", "OFFICIAL · REUTERS"),
+    (icon_probe, "Voyager 1: one light-day out", "25.9bn km at 10:16 UTC; 49 years into the flight", "CONFIRMED · NASA/JPL"),
+    (icon_fedchart, "Dow falls 561 on Fed minutes", "Almost all officials see more hikes; Nasdaq +0.4%", "CONFIRMED · FED · CNBC"),
+    (icon_superbug, "WHO: superbugs outrun drugs", "Resistance worse than 2019; last-resort failing", "OFFICIAL · UN NEWS"),
+    (icon_globe_leaf, "COP31 draft splits nations", "Phase-out text still split; Arab Group, Russia reject", "REPORTED · ARAB NEWS"),
 ]
 
 
@@ -409,109 +414,126 @@ def timeline(draw) -> None:
         draw.text((cx - lw / 2, line_y + 26), label, font=SANS_12, fill=GRAY)
 
 
-# ---------------------------------------------------------------- regions
-REGIONS = [
-    ("EUROPE", [
-        "ECB: AI boom echoes dotcom era",
-        "DB leak probe opens: 15M files",
-        "UK inflation rises to 3.6%",
-        "Romania M5.7: strongest in years",
-        "Odesa strike kills 4; 141 drones",
-        "Crimean Bridge: trains resume",
-        "Germany power-tax cut from 2027",
-    ]),
-    ("NORTH AMERICA", [
-        "Jeffries Speaker nod: 251–11",
-        "Outages: Microsoft, FAA, banks",
-        "Rubio: no sign of cyberattack",
-        "Waymo pulls freeway robotaxis",
-        "Anthropic prices record $81.3bn IPO",
-        "TSX falls 2.1% to 5-month low",
-    ]),
-    ("ASIA", [
-        "Xi-Putin lunch: multipolar push",
-        "Trump-Putin handshake: first since 2025",
-        "Trilateral set for Thursday",
-        "Manila: 'biggest' trade deal claim",
-        "William and Kate meet Modi",
-        "Kospi +2% on Nvidia beat",
-        "Imran Khan £190m appeals at IHC",
-    ]),
-    ("MIDDLE EAST", [
-        "Saudi-led jets pound Sanaa",
-        "Houthis: 17 killed in strikes",
-        "Knesset moves to repeal overhaul",
-        "Gaza doctor detention extended",
-        "Qaani in Baghdad amid tensions",
-        "Hormuz flows halved: 8.6M bpd",
-        "Iran army: 'monitoring' US movements",
-    ]),
-    ("AFRICA", [
-        "Ethiopia-Eritrea troops mass at Badme",
-        "Amnesty: RSF drones kill 37 in El Obeid",
-        "Mauritius: Chagos handover due in Dec",
-        "S Africa rebukes Nigeria envoy over row",
-        "WHO keeps DRC Ebola emergency: 11,300+",
-        "El Niño + war: 1m Ethiopians at risk",
-        "Besigye family raises health alarm",
-    ]),
-    ("LATIN AMERICA", [
-        "Hegseth in Bogotá: first C-130 handed over",
-        "Surprise stopover in Venezuela",
-        "Brazil Senate backs Lula $10bn plan",
-        "Paraguay Senate swears in interim AG",
-        "Chile: CUT marches against Kast cuts",
-        "Peru Tumbes river stays on red alert",
-    ]),
-    ("OCEANIA & PACIFIC", [
-        "Fiji: national disaster over drought",
-        "Cyclone Xavier: cat 5, gusts 315km/h",
-        "Australia sanctions Weiss over settlements",
-        "GTA VI unlocks first in New Zealand",
-        "M6.0 quake hits PNG region",
-        "Vanuatu denies banking-collapse rumour",
-        "RNZ cuts: 58 jobs, Pacific link at risk",
-    ]),
+# ---------------------------------------------------------------- map + briefs
+REGION_COLORS = {
+    "EU": (43, 74, 128), "NA": (106, 76, 147), "AS": (196, 140, 32),
+    "ME": (179, 38, 30), "AF": (58, 122, 68), "LA": (162, 52, 96),
+    "OC": (42, 122, 122),
+}
+REGION_NAMES = [
+    ("EU", "EUROPE"), ("NA", "N AMERICA"), ("AS", "ASIA"), ("ME", "MID EAST"),
+    ("AF", "AFRICA"), ("LA", "LATAM"), ("OC", "OCEANIA"),
 ]
+BRIEFS = [
+    ("EU", "Frankfurt: ECB sees dotcom echo"),
+    ("EU", "Berlin: DB leak probe, 15M files"),
+    ("EU", "London: UK inflation hits 3.6%"),
+    ("EU", "Bucharest: M5.7, strongest in years"),
+    ("EU", "Odesa: 4 dead; 141 drones"),
+    ("EU", "Kerch: bridge rail traffic resumes"),
+    ("EU", "Berlin: power-tax cut from 2027"),
+    ("NA", "Washington: Jeffries nod 251–11"),
+    ("NA", "US: outages hit Microsoft, FAA"),
+    ("NA", "Rubio: no sign of cyberattack"),
+    ("NA", "Waymo pulls freeway robotaxis"),
+    ("NA", "Anthropic prices record $81.3bn IPO"),
+    ("NA", "Toronto: TSX -2.1%, 5-month low"),
+    ("AS", "Xi-Putin lunch: multipolar push"),
+    ("AS", "Trump-Putin meet: first since 2025"),
+    ("AS", "Trilateral talks set for Thursday"),
+    ("AS", "Manila: Trump 'biggest' trade deal"),
+    ("AS", "Delhi: William and Kate meet Modi"),
+    ("AS", "Seoul: Kospi +2% on Nvidia beat"),
+    ("AS", "IHC: Khan £190m appeal adjourned"),
+    ("ME", "Sanaa: Saudi-led jets strike"),
+    ("ME", "Houthis: 17 killed in strikes"),
+    ("ME", "Knesset moves to repeal overhaul"),
+    ("ME", "Gaza: doctor's detention extended"),
+    ("ME", "Qaani in Baghdad amid tensions"),
+    ("ME", "Hormuz flows halved: 8.6M bpd"),
+    ("ME", "Iran army: 'monitoring' US moves"),
+    ("AF", "Badme: Ethiopia-Eritrea buildup"),
+    ("AF", "El Obeid: Amnesty says 37 killed"),
+    ("AF", "Chagos: handover due in December"),
+    ("AF", "Pretoria rebukes Nigeria envoy"),
+    ("AF", "DRC: WHO keeps Ebola emergency"),
+    ("AF", "Ethiopia: El Niño + war, 1m at risk"),
+    ("AF", "Besigye family raises health alarm"),
+    ("LA", "Bogotá: Hegseth hands over C-130"),
+    ("LA", "Caracas: surprise Hegseth stopover"),
+    ("LA", "Brazil Senate backs Lula $10bn plan"),
+    ("LA", "Paraguay: interim AG sworn in"),
+    ("LA", "Santiago: CUT marches against cuts"),
+    ("LA", "Peru: Tumbes river stays red alert"),
+    ("OC", "Fiji: national drought disaster"),
+    ("OC", "Xavier: cat 5, gusts 315 km/h"),
+    ("OC", "Canberra sanctions settler Weiss"),
+    ("OC", "GTA VI unlocks first in New Zealand"),
+    ("OC", "M6.0 quake hits PNG region"),
+    ("OC", "Vanuatu denies bank-collapse rumour"),
+    ("OC", "RNZ cuts: 58 jobs, Pacific at risk"),
+]
+# Pin positions in map pixels (equirectangular, 294x110). The three European
+# pins are nudged apart so their badges stay legible; positions approximate.
+PINS = {"1": (240.1, 42.7), "2": (186.1, 37.2), "3": (145.0, 13.0),
+        "5": (84.1, 29.4), "6": (148.0, 27.0), "7": (172.1, 33.0)}
 
 
-def region_box(draw, x, y, w, h, name, stories) -> None:
-    draw.rounded_rectangle([x, y, x + w, y + h], radius=6, fill=WHITE, outline=GRAY, width=1)
-    draw.rectangle([x, y, x + w, y + 22], fill=BAND)
-    draw.text((x + 8, y + 4), name, font=SANS_12B, fill=WHITE)
-    count = str(len(stories))
-    draw.text((x + w - 8 - text_width(draw, count, SANS_12B), y + 4), count, font=SANS_12B, fill=GOLD)
-    inner_w = w - 26
-    size = 12
-    while size > 9:
-        f = font("DejaVuSans.ttf", size)
-        width_ok = all(text_width(draw, s, f) <= inner_w for s in stories)
-        height_ok = 26 + len(stories) * (size + 1) <= h - 2
-        if width_ok and height_ok:
-            break
-        size -= 1
-    f = font("DejaVuSans.ttf", size)
-    line_h = size + 1
-    sy = y + 26
-    for s in stories:
-        draw.rectangle([x + 8, sy + 4, x + 11, sy + 7], fill=RED)
-        draw.text((x + 16, sy), s, font=f, fill=INK)
-        sy += line_h
+def world_map(draw, ox, oy) -> None:
+    land = json.loads((Path(__file__).resolve().parent / "assets" / "landdots.json").read_text())
+    for x, y in land["dots"]:
+        draw.ellipse([ox + x - 0.8, oy + y - 0.8, ox + x + 0.8, oy + y + 0.8], fill=DOT)
+    for n, (px, py) in PINS.items():
+        cx, cy = ox + px, oy + py
+        draw.ellipse([cx - 5, cy - 5, cx + 5, cy + 5], fill=RED, outline=WHITE, width=1)
+        nw = text_width(draw, n, PIN_F)
+        draw.text((cx - nw / 2, cy - 4.5), n, font=PIN_F, fill=WHITE)
+    # Pin 4 rides off the map: Voyager 1 is one light-day out.
+    sx, sy = ox + 248, oy + 16
+    ex, ey = ox + 282, oy + 5
+    for i in range(6):
+        t0, t1 = i / 6, (i + 0.5) / 6
+        draw.line([sx + (ex - sx) * t0, sy + (ey - sy) * t0,
+                   sx + (ex - sx) * t1, sy + (ey - sy) * t1], fill=RED, width=1)
+    draw.rectangle([ex - 2, ey - 2, ex + 3, ey + 3], fill=INK)
+    draw.ellipse([ex - 6, ey - 6, ex + 7, ey + 7], outline=RED, width=1)
+    draw.text((ex - 2, ey + 8), "4", font=PIN_F, fill=RED)
 
 
-def regions(draw) -> None:
+def map_and_briefs(draw) -> None:
     top = 744
-    gap = 10
-    row1_h, row2_h = 112, 112
-    w1 = (W - 2 * MARGIN - 3 * gap) / 4
-    for i in range(4):
-        name, stories = REGIONS[i]
-        region_box(draw, MARGIN + i * (w1 + gap), top, w1, row1_h, name, stories)
-    w2 = (W - 2 * MARGIN - 2 * gap) / 3
-    y2 = top + row1_h + gap
-    for i in range(3):
-        name, stories = REGIONS[4 + i]
-        region_box(draw, MARGIN + i * (w2 + gap), y2, w2, row2_h, name, stories)
+    mx0, mx1 = MARGIN, 346
+    draw.rounded_rectangle([mx0, top, mx1, 978], radius=6, fill=WHITE, outline=GRAY, width=1)
+    draw.rectangle([mx0, top, mx1, top + 22], fill=BAND)
+    draw.text((mx0 + 8, top + 4), "WHERE IT HAPPENED", font=SANS_12B, fill=WHITE)
+    ox, oy = mx0 + 8, top + 30
+    world_map(draw, ox, oy)
+    # Region key under the map: two columns of color chips.
+    ky = oy + 118
+    for i, (key, name) in enumerate(REGION_NAMES):
+        col, row = divmod(i, 4)
+        kx = mx0 + 10 + col * 150
+        yy = ky + row * 13
+        draw.rectangle([kx, yy + 2, kx + 7, yy + 9], fill=REGION_COLORS[key])
+        draw.text((kx + 11, yy), name, font=SANS_9, fill=GRAY)
+    draw.text((mx0 + 10, ky + 56), "1–7 drawn stories · positions approximate", font=SANS_9, fill=GRAY)
+    draw.text((mx0 + 10, ky + 68), "4 Voyager 1 is off the map, in deep space", font=SANS_9, fill=GRAY)
+    # Briefs: three columns of numbered one-liners, region-colored bullets.
+    bx0 = 356
+    draw.text((bx0, top), "ALSO ON WEDNESDAY 18 NOVEMBER — 47 MORE STORIES", font=SANS_12B, fill=GRAY)
+    colw = (W - MARGIN - bx0 - 20) / 3
+    y0 = top + 24
+    for i, (reg, text) in enumerate(BRIEFS):
+        col, row = divmod(i, 16)
+        x = bx0 + col * (colw + 10)
+        y = y0 + row * 12.5
+        num = str(8 + i)
+        draw.text((x, y), num, font=SANS_10B, fill=RED)
+        draw.rectangle([x + 16, y + 4, x + 19, y + 7], fill=REGION_COLORS[reg])
+        f = SANS_10
+        while text_width(draw, text, f) > colw - 24 and f.size > 8:
+            f = font("DejaVuSans.ttf", f.size - 1)
+        draw.text((x + 23, y), text, font=f, fill=INK)
 
 
 # ---------------------------------------------------------------- footer
@@ -538,7 +560,7 @@ def footer(draw) -> None:
 
 
 def story_count() -> int:
-    return 1 + len(FEATURES) + sum(len(s) for _, s in REGIONS)
+    return 1 + len(FEATURES) + len(BRIEFS)
 
 
 def render() -> Image.Image:
@@ -551,7 +573,7 @@ def render() -> Image.Image:
     numbers_strip(draw)
     features(draw)
     timeline(draw)
-    regions(draw)
+    map_and_briefs(draw)
     footer(draw)
     return img
 
