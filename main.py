@@ -2,9 +2,10 @@
 """make.fun news-image-20261118 entry point (Python 3.13, standard library only).
 
 The graded program copies the pre-rendered front page of 18 November 2026
-world news (assets/entry.png) to the output directory. The image is rendered
-offline by render_news_image.py; copying keeps both graded runs byte-identical
-and needs no network, no dependencies and no randomness.
+world news (assets/entry.png, 58 date-checked stories) to the output
+directory. The image is rendered offline by render_news_image.py; copying
+keeps both graded runs byte-identical and needs no network, no dependencies
+and no randomness.
 
 Outside the grader's container, MAKEFUN_OUTPUT_DIR stands in for /output:
     mkdir -p out && MAKEFUN_OUTPUT_DIR=out python3 main.py
@@ -15,6 +16,7 @@ from __future__ import annotations
 import hashlib
 import os
 import shutil
+import struct
 import sys
 from pathlib import Path
 
@@ -27,6 +29,16 @@ def output_dir() -> Path:
     return Path(os.environ.get("MAKEFUN_OUTPUT_DIR", "/output"))
 
 
+def png_dimensions(path: Path) -> tuple[int, int]:
+    """Read width and height from the PNG IHDR chunk (first chunk, fixed layout)."""
+    with path.open("rb") as fh:
+        header = fh.read(24)
+    if len(header) < 24 or header[12:16] != b"IHDR":
+        raise ValueError("missing IHDR chunk")
+    width, height = struct.unpack(">II", header[16:24])
+    return width, height
+
+
 def main() -> int:
     if not SOURCE_IMAGE.is_file():
         print(f"entry image missing: {SOURCE_IMAGE}", file=sys.stderr)
@@ -37,6 +49,10 @@ def main() -> int:
         return 1
     if SOURCE_IMAGE.stat().st_size > 1048576:
         print("entry image exceeds the 1 MiB gate limit", file=sys.stderr)
+        return 1
+    width, height = png_dimensions(SOURCE_IMAGE)
+    if width > 1024 or height > 1024:
+        print(f"entry image exceeds the 1024x1024 gate limit: {width}x{height}", file=sys.stderr)
         return 1
     target_dir = output_dir()
     target_dir.mkdir(parents=True, exist_ok=True)
